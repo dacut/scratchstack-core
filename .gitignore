@@ -19,3 +19,4 @@ Cargo.lock
 # Ignore coverage data
 *.profdata
 *.profraw
+coverage-html
