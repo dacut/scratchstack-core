@@ -4,13 +4,7 @@ mod root_user;
 mod service;
 mod user;
 
-pub use {
-    assumed_role::AssumedRole,
-    federated_user::FederatedUser,
-    root_user::RootUser,
-    service::Service,
-    user::User,
-};
+pub use {assumed_role::AssumedRole, federated_user::FederatedUser, root_user::RootUser, service::Service, user::User};
 
 use {
     crate::TryToArn,

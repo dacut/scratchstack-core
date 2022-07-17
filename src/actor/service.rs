@@ -3,9 +3,7 @@ use {
         utils::{validate_dns, validate_region},
         PrincipalError,
     },
-    std::{
-        fmt::{Display, Formatter, Result as FmtResult},
-    },
+    std::fmt::{Display, Formatter, Result as FmtResult},
 };
 
 #[derive(Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]

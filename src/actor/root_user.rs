@@ -3,9 +3,7 @@ use {
         utils::{validate_account_id, validate_partition},
         PrincipalError, ToArn,
     },
-    std::{
-        fmt::{Display, Formatter, Result as FmtResult},
-    },
+    std::fmt::{Display, Formatter, Result as FmtResult},
 };
 
 /// Details about an AWS account.

@@ -3,9 +3,7 @@ use {
         utils::{validate_account_id, validate_identifier, validate_name, validate_partition, validate_path},
         PrincipalError, ToArn,
     },
-    std::{
-        fmt::{Display, Formatter, Result as FmtResult},
-    },
+    std::fmt::{Display, Formatter, Result as FmtResult},
 };
 
 /// Details about an AWS IAM user.
