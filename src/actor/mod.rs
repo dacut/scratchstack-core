@@ -2,7 +2,6 @@ mod assumed_role;
 mod federated_user;
 mod root_user;
 mod service;
-mod session;
 mod user;
 
 pub use {
@@ -10,7 +9,6 @@ pub use {
     federated_user::FederatedUser,
     root_user::RootUser,
     service::Service,
-    session::{SessionData, SessionValue},
     user::User,
 };
 

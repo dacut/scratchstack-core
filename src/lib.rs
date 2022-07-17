@@ -24,10 +24,12 @@
 pub mod actor;
 mod error;
 pub mod policy;
+mod session;
 mod traits;
 pub mod utils;
 
 pub use {
     error::PrincipalError,
+    session::{SessionData, SessionValue},
     traits::{ToArn, TryToArn},
 };

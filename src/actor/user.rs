@@ -1,16 +1,15 @@
 use {
-    super::SessionData,
     crate::{
         utils::{validate_account_id, validate_identifier, validate_name, validate_partition, validate_path},
         PrincipalError, ToArn,
     },
     std::{
-        fmt::{Debug, Display, Formatter, Result as FmtResult},
-        hash::{Hash, Hasher},
+        fmt::{Display, Formatter, Result as FmtResult},
     },
 };
 
 /// Details about an AWS IAM user.
+#[derive(Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 pub struct User {
     /// The partition this principal exists in.
     partition: String,
@@ -26,9 +25,6 @@ pub struct User {
 
     /// Name of the principal, case-insensitive.
     user_name: String,
-
-    /// Session details about the user.
-    session: SessionData,
 }
 
 impl User {
@@ -50,7 +46,6 @@ impl User {
     ///     [PrincipalError::InvalidUserName] error will be returned:
     ///     *   The name must contain between 1 and 64 characters.
     ///     *   The name must be composed to ASCII alphanumeric characters or one of `, - . = @ _`.
-    /// * `session`: Session details about the user.
     ///
     /// # Return value
     ///
@@ -62,7 +57,6 @@ impl User {
         path: &str,
         user_id: &str,
         user_name: &str,
-        session: SessionData,
     ) -> Result<Self, PrincipalError> {
         validate_partition(partition)?;
         validate_account_id(account_id)?;
@@ -76,7 +70,6 @@ impl User {
             path: path.into(),
             user_id: user_id.into(),
             user_name: user_name.into(),
-            session: session,
         })
     }
 
@@ -104,60 +97,7 @@ impl User {
     pub fn user_name(&self) -> &str {
         &self.user_name
     }
-
-    #[inline]
-    pub fn session(&self) -> &SessionData {
-        &self.session
-    }
 }
-
-impl Clone for User {
-    fn clone(&self) -> Self {
-        Self {
-            partition: self.partition.clone(),
-            account_id: self.account_id.clone(),
-            path: self.path.clone(),
-            user_id: self.user_id.clone(),
-            user_name: self.user_name.clone(),
-            session: self.session.clone(),
-        }
-    }
-}
-
-impl Debug for User {
-    fn fmt(&self, f: &mut Formatter) -> FmtResult {
-        f.debug_struct("User")
-            .field("partition", &self.partition)
-            .field("account_id", &self.account_id)
-            .field("path", &self.path)
-            .field("user_id", &self.user_id)
-            .field("user_name", &self.user_name)
-            .field("session", &self.session)
-            .finish()
-    }
-}
-
-impl Hash for User {
-    fn hash<H: Hasher>(&self, state: &mut H) {
-        self.partition.hash(state);
-        self.account_id.hash(state);
-        self.path.hash(state);
-        self.user_id.hash(state);
-        self.user_name.hash(state);
-    }
-}
-
-impl PartialEq for User {
-    fn eq(&self, other: &Self) -> bool {
-        self.partition == other.partition
-            && self.account_id == other.account_id
-            && self.path == other.path
-            && self.user_id == other.user_id
-            && self.user_name == other.user_name
-    }
-}
-
-impl Eq for User {}
 
 impl ToArn for User {
     fn to_arn(&self) -> String {
@@ -173,40 +113,24 @@ impl Display for User {
 
 #[cfg(test)]
 mod tests {
-    use super::{super::SessionData, User};
+    use super::User;
 
     #[test]
     fn check_valid_users() {
-        let user1 =
-            User::new("aws", "123456789012", "/", "AIDAA2B3C4D5E6F7HIJK", "user-name", SessionData::new()).unwrap();
+        let user1 = User::new("aws", "123456789012", "/", "AIDAA2B3C4D5E6F7HIJK", "user-name").unwrap();
         assert_eq!(user1.to_string(), "arn:aws:iam::123456789012:user/user-name");
 
-        let user2 = User::new(
-            "aws",
-            "123456789012",
-            "/",
-            "AIDAA2B3C4D5E6F7HIJK",
-            "user-name_is@ok.with,accepted=symbols",
-            SessionData::new(),
-        )
-        .unwrap();
+        let user2 =
+            User::new("aws", "123456789012", "/", "AIDAA2B3C4D5E6F7HIJK", "user-name_is@ok.with,accepted=symbols")
+                .unwrap();
 
         assert_eq!(user2.to_string(), "arn:aws:iam::123456789012:user/user-name_is@ok.with,accepted=symbols");
 
         assert_ne!(user1, user2);
 
-        User::new("aws", "123456789012", "/path/test/", "AIDAA2B3C4D5E6F7HIJK", "user-name", SessionData::new())
-            .unwrap();
+        User::new("aws", "123456789012", "/path/test/", "AIDAA2B3C4D5E6F7HIJK", "user-name").unwrap();
 
-        User::new(
-            "aws",
-            "123456789012",
-            "/path///multi-slash/test/",
-            "AIDAA2B3C4D5E6F7HIJK",
-            "user-name",
-            SessionData::new(),
-        )
-        .unwrap();
+        User::new("aws", "123456789012", "/path///multi-slash/test/", "AIDAA2B3C4D5E6F7HIJK", "user-name").unwrap();
 
         let user1 = User::new(
             "aws",
@@ -214,7 +138,6 @@ mod tests {
             "/!\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~/",
             "AIDAA2B3C4D5E6F7HIJK",
             "user-name",
-            SessionData::new(),
         )
         .unwrap();
 
@@ -224,10 +147,9 @@ mod tests {
             "/",
             "AIDAA2B3C4D5E6F7HIJK",
             "user-name-with-64-characters====================================",
-            SessionData::new(),
         )
         .unwrap();
-        User::new("aws", "123456789012", "/", "AIDALMNOPQRSTUVWXY23", "user-name", SessionData::new()).unwrap();
+        User::new("aws", "123456789012", "/", "AIDALMNOPQRSTUVWXY23", "user-name").unwrap();
 
         assert_ne!(user1, user2);
 
@@ -241,28 +163,22 @@ mod tests {
     #[test]
     fn check_invalid_users() {
         assert_eq!(
-            User::new("", "123456789012", "/", "AIDAA2B3C4D5E6F7HIJK", "user-name", SessionData::new())
-                .unwrap_err()
-                .to_string(),
+            User::new("", "123456789012", "/", "AIDAA2B3C4D5E6F7HIJK", "user-name",).unwrap_err().to_string(),
             r#"Invalid partition: """#
         );
 
         assert_eq!(
-            User::new("aws", "", "/", "AIDAA2B3C4D5E6F7HIJK", "user-name", SessionData::new()).unwrap_err().to_string(),
+            User::new("aws", "", "/", "AIDAA2B3C4D5E6F7HIJK", "user-name",).unwrap_err().to_string(),
             r#"Invalid account id: """#
         );
 
         assert_eq!(
-            User::new("aws", "123456789012", "", "AIDAA2B3C4D5E6F7HIJK", "user-name", SessionData::new())
-                .unwrap_err()
-                .to_string(),
+            User::new("aws", "123456789012", "", "AIDAA2B3C4D5E6F7HIJK", "user-name",).unwrap_err().to_string(),
             r#"Invalid path: """#
         );
 
         assert_eq!(
-            User::new("aws", "123456789012", "/", "AIDAA2B3C4D5E6F7HIJK", "", SessionData::new())
-                .unwrap_err()
-                .to_string(),
+            User::new("aws", "123456789012", "/", "AIDAA2B3C4D5E6F7HIJK", "",).unwrap_err().to_string(),
             r#"Invalid user name: """#
         );
 
@@ -273,7 +189,6 @@ mod tests {
                 "/",
                 "AIDAA2B3C4D5E6F7HIJK",
                 "user-name-with-65-characters=====================================",
-                SessionData::new()
             )
             .unwrap_err()
             .to_string(),
@@ -281,47 +196,41 @@ mod tests {
         );
 
         assert_eq!(
-            User::new("aws", "123456789012", "/", "AIDAA2B3C4D5E6F7HIJK", "user!name", SessionData::new())
-                .unwrap_err()
-                .to_string(),
+            User::new("aws", "123456789012", "/", "AIDAA2B3C4D5E6F7HIJK", "user!name",).unwrap_err().to_string(),
             r#"Invalid user name: "user!name""#
         );
 
         assert_eq!(
-            User::new("aws", "123456789012", "/", "", "user-name", SessionData::new()).unwrap_err().to_string(),
+            User::new("aws", "123456789012", "/", "", "user-name",).unwrap_err().to_string(),
             r#"Invalid user id: """#
         );
 
         assert_eq!(
-            User::new("aws", "123456789012", "/", "AGPAA2B3C4D5E6F7HIJK", "user-name", SessionData::new())
-                .unwrap_err()
-                .to_string(),
+            User::new("aws", "123456789012", "/", "AGPAA2B3C4D5E6F7HIJK", "user-name",).unwrap_err().to_string(),
             r#"Invalid user id: "AGPAA2B3C4D5E6F7HIJK""#
         );
 
         assert_eq!(
-            User::new("aws", "123456789012", "/", "AIDA________________", "user-name", SessionData::new())
-                .unwrap_err()
-                .to_string(),
+            User::new("aws", "123456789012", "/", "AIDA________________", "user-name",).unwrap_err().to_string(),
             r#"Invalid user id: "AIDA________________""#
         );
 
         assert_eq!(
-            User::new("aws", "123456789012", "path/test/", "AIDAA2B3C4D5E6F7HIJK", "user-name", SessionData::new())
+            User::new("aws", "123456789012", "path/test/", "AIDAA2B3C4D5E6F7HIJK", "user-name",)
                 .unwrap_err()
                 .to_string(),
             r#"Invalid path: "path/test/""#
         );
 
         assert_eq!(
-            User::new("aws", "123456789012", "/path/test", "AIDAA2B3C4D5E6F7HIJK", "user-name", SessionData::new())
+            User::new("aws", "123456789012", "/path/test", "AIDAA2B3C4D5E6F7HIJK", "user-name",)
                 .unwrap_err()
                 .to_string(),
             r#"Invalid path: "/path/test""#
         );
 
         assert_eq!(
-            User::new("aws", "123456789012", "/path test/", "AIDAA2B3C4D5E6F7HIJK", "user-name", SessionData::new())
+            User::new("aws", "123456789012", "/path test/", "AIDAA2B3C4D5E6F7HIJK", "user-name",)
                 .unwrap_err()
                 .to_string(),
             r#"Invalid path: "/path test/""#
