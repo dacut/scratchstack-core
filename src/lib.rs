@@ -1,5 +1,3 @@
-#![warn(clippy::all)]
-
 //! Principals for AWS and AWS-like services.
 //!
 //! Principals come in two "flavors": actors and policies. A policy-based prinicpal can be completely specified via
@@ -21,6 +19,8 @@
 //! variable. Assumed roles carry a token issue time, access via the `\${aws:TokenIssueTime}` variable, as well as
 //! an expiration time on or after which the assumed role is no longer valid.
 
+#![warn(clippy::all)]
+
 use std::{
     error::Error,
     fmt::{Debug, Display, Formatter, Result as FmtResult},
@@ -29,8 +29,7 @@ use std::{
 pub mod actor;
 pub mod details;
 pub mod policy;
-pub use actor::PrincipalActor;
-pub use policy::PolicyPrincipal;
+pub use {actor::PrincipalActor, policy::PolicyPrincipal};
 
 /// Errors that can be raise during the parsing of principals.
 #[derive(Debug)]

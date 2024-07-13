@@ -1,10 +1,9 @@
-use std::fmt::{Debug, Display, Formatter, Result as FmtResult};
-
-use crate::details;
-use crate::policy::PolicyPrincipal;
-#[cfg(feature = "service")]
+#[cfg(any(feature = "service", doc))]
 use crate::validate_region;
-use crate::{validate_identifier, PrincipalError};
+use {
+    crate::{details, policy::PolicyPrincipal, validate_identifier, PrincipalError},
+    std::fmt::{Debug, Display, Formatter, Result as FmtResult},
+};
 
 /// Information about a temporary token.
 #[derive(Clone, Debug, PartialEq, Eq)]
@@ -23,7 +22,7 @@ pub type GroupDetails = details::GroupDetails<String>;
 pub type InstanceProfileDetails = details::InstanceProfileDetails<String>;
 pub type RoleDetails = details::RoleDetails<String>;
 pub type RootUserDetails = details::RootUserDetails;
-#[cfg(feature = "service")]
+#[cfg(any(feature = "service", doc))]
 pub type ServiceDetails = details::ServiceDetails<Option<String>>;
 pub type UserDetails = details::UserDetails<String>;
 
@@ -443,7 +442,7 @@ impl Display for PrincipalActor {
                 Some(partition) => write!(f, "arn:{}:iam::{}:root", partition, d.account_id),
             },
             Self::User(ref d) => write!(f, "arn:{}:iam::{}:user{}{}", d.partition, d.account_id, d.path, d.user_name),
-            #[cfg(feature = "service")]
+            #[cfg(any(feature = "service", doc))]
             Self::Service(ref s) => match (&s.partition, &s.data) {
                 (Some(partition), Some(region)) => {
                     write!(f, "arn:{}:iam:{}::service/{}", partition, region, s.service_name)
@@ -466,7 +465,7 @@ impl From<PrincipalActor> for PolicyPrincipal {
             PrincipalActor::InstanceProfile(d) => PolicyPrincipal::InstanceProfile(d.into()),
             PrincipalActor::Role(d) => PolicyPrincipal::Role(d.into()),
             PrincipalActor::RootUser(d) => PolicyPrincipal::RootUser(d),
-            #[cfg(feature = "service")]
+            #[cfg(any(feature = "service", doc))]
             PrincipalActor::Service(d) => PolicyPrincipal::Service(d.into()),
             PrincipalActor::User(d) => PolicyPrincipal::User(d.into()),
         }
@@ -532,7 +531,7 @@ impl From<RoleDetails> for details::RoleDetails<()> {
     }
 }
 
-#[cfg(feature = "service")]
+#[cfg(any(feature = "service", doc))]
 impl From<ServiceDetails> for details::ServiceDetails<()> {
     fn from(from: ServiceDetails) -> details::ServiceDetails<()> {
         details::ServiceDetails {

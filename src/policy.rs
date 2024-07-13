@@ -1,10 +1,11 @@
-use log::trace;
-use std::{
-    fmt::{Debug, Display, Formatter, Result as FmtResult},
-    str::FromStr,
+use {
+    crate::{details, PrincipalError},
+    log::trace,
+    std::{
+        fmt::{Debug, Display, Formatter, Result as FmtResult},
+        str::FromStr,
+    },
 };
-
-use crate::{details, PrincipalError};
 
 pub type AssumedRoleDetails = details::AssumedRoleDetails<()>;
 pub type FederatedUserDetails = details::FederatedUserDetails<()>;
@@ -436,10 +437,7 @@ impl FromStr for PolicyPrincipal {
 
 #[cfg(test)]
 mod tests {
-    use super::PolicyPrincipal;
-    use std::str::FromStr;
-
-    use test_env_log::test;
+    use {super::PolicyPrincipal, std::str::FromStr, test_log::test};
 
     #[test]
     fn check_valid_assumed_roles() {

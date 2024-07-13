@@ -1,6 +1,7 @@
-use std::fmt::Debug;
-
-use crate::{validate_account_id, validate_name, validate_partition, validate_path, PrincipalError};
+use {
+    crate::{validate_account_id, validate_name, validate_partition, validate_path, PrincipalError},
+    std::fmt::Debug,
+};
 
 /// A trait bound/alias for principal flavor-specific data. This is automatically implemented for any type which
 /// matches the required bounds.
