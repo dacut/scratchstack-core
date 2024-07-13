@@ -15,7 +15,16 @@ Cargo.lock
 # already existing elements were commented out
 /target
 
-
 # Ignore coverage data
 *.profdata
 *.profraw
+
+# Visual Studio Code
+.vscode/
+*.code-workspace
+
+# Generated coverage reports
+coverage-html/
+
+# Python utilities
+venv/

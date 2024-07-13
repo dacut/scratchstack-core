@@ -928,6 +928,7 @@ mod tests {
         );
     }
 
+    #[cfg(feature = "service")]
     #[test]
     fn check_valid_services() {
         let s1 = PolicyPrincipal::service(Some("aws".to_string()), "service-name").unwrap();
@@ -937,6 +938,7 @@ mod tests {
         assert_eq!(s1, s1_str);
     }
 
+    #[cfg(feature = "service")]
     #[test]
     fn check_invalid_services() {
         assert_eq!(
